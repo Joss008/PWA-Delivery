@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(node --version)",
+      "Shell(npm:*)",
+      "Shell(node scripts/gen-icons.mjs)",
+      "Shell(dir C:\\Users\\Jeff\\package-lock.json C:\\Users\\Jeff\\Desktop\\PWA-Delivery\\package-lock.json 2>nul & dir C:\\Users\\Jeff\\Desktop\\PWA-Delivery\\components C:\\Users\\Jeff\\Desktop\\PWA-Delivery\\lib)",
+      "Shell(dir:*)",
+      "Shell(findstr:*)",
+      "Shell(if:*)",
+      "Shell(else:*)",
+      "Shell(Get-ChildItem:*)",
+      "Shell(Select-Object:*)",
+      "Shell(Format-Table:*)",
+      "powershell",
+      "Shell(node -e \"const { DatabaseSync } = require('node:sqlite'); const db = new DatabaseSync(':memory:'); db.exec('CREATE TABLE t (id INTEGER)'); db.prepare('INSERT INTO t VALUES (?)').run(1); console.log(db.prepare('SELECT * FROM t').all());\")",
+      "Shell(node -e const { seed, getDb } = require('./.next/server/chunks/...') 2 >& 1)",
+      "Shell(npx next dev --port 3100 > \"C:\\Users\\Jeff\\AppData\\Local\\Temp\\commandcode\\dev.log\" 2>&1)",
+      "Shell(node -e \"const {DatabaseSync}=require('node:sqlite'); const db=new DatabaseSync('./data/delivery.db'); console.log(db.prepare('SELECT id,usuario,nombre,estado FROM repartidores').all()); console.log('sesiones', db.prepare('SELECT token,repartidorId FROM sesiones').all());\")",
+      "Shell(npx next dev --port 3100)",
+      "Shell(node -e \"const {DatabaseSync}=require('node:sqlite'); const db=new DatabaseSync('./data/delivery.db'); console.log('pedidos'); console.log(db.prepare('SELECT id,codigo,estado,repartidorId FROM pedidos').all());\")",
+      "Shell(npx next dev --port 3101 > \"C:\\Users\\Jeff\\AppData\\Local\\Temp\\commandcode\\next-dev-3101.log\" 2>&1)",
+      "Shell(npx next dev --port 3102)",
+      "Shell(npx next dev --port 3103)",
+      "Shell(npx next dev --port 3104)",
+      "Shell(npx cross-env NODE_ENV=development next dev --port 3104)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}

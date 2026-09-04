@@ -1,0 +1,10 @@
+- Prefers to communicate in Spanish (both instructions and responses). Confidence: 0.9
+- Keeps project specifications in a PROJECT.md file, expects work to follow the scope described there, and expects those files to be kept updated as the project evolves. Confidence: 0.9
+- Prefers concrete example request/response bodies (e.g., JSON payload) alongside endpoint definitions. Confidence: 0.7
+- Uses Spanish identifiers and endpoint paths in APIs (e.g., /api/ubicaciones, repartidor_id). Confidence: 0.7
+- Works across multiple related projects and expects them to be integrated (e.g., a PWA frontend that talks to a separate web backend). Confidence: 0.7
+- Likes temporary/manual test controls (e.g., a throwaway button) to quickly verify cross-project integrations, often with cycling/multiple sample data points so the change is visibly observable. Confidence: 0.8
+- Reports bugs by pasting raw browser/DevTools console output verbatim, including unrelated noise (e.g., browser-extension errors, framework notices), rather than summarizing the issue. Confidence: 0.5
+- Reports bugs by pasting raw browser/DevTools console output verbatim (including unrelated extension and framework notices) rather than summarizing the issue. Confidence: 0.5
+- When verifying a change visually, wants multiple varying data points (e.g., several locations rotating on each click) so movement/behavior is observable rather than a single static value. Confidence: 0.7
+- Prefers removing example/seed data once a real data source (e.g., another project) takes over feeding it, rather than leaving stale sample records. Confidence: 0.6
