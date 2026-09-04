@@ -7,15 +7,20 @@ import { api } from "@/lib/client";
 interface GeoContextValue {
   estado: "sin_permiso" | "pendiente" | "activo" | "error";
   ultimaUbicacion: { latitude: number; longitude: number } | null;
+  habilitado: boolean;
+  setHabilitado: (habilitado: boolean) => void;
 }
 
 const GeoContext = React.createContext<GeoContextValue>({
   estado: "pendiente",
   ultimaUbicacion: null,
+  habilitado: true,
+  setHabilitado: () => {},
 });
 
 const MIN_DISTANCIA_METROS = 30;
 const INTERVALO_MIN_MS = 15_000;
+const STORAGE_KEY = "gps_habilitado";
 
 export function GeoProvider({ children }: { children: React.ReactNode }) {
   const { repartidor } = useAuth();
@@ -23,6 +28,17 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
     React.useState<GeoContextValue["estado"]>("pendiente");
   const [ultimaUbicacion, setUltimaUbicacion] =
     React.useState<GeoContextValue["ultimaUbicacion"]>(null);
+  const [habilitado, setHabilitadoState] = React.useState(true);
+
+  React.useEffect(() => {
+    const guardado = localStorage.getItem(STORAGE_KEY);
+    if (guardado !== null) setHabilitadoState(guardado === "1");
+  }, []);
+
+  const setHabilitado = React.useCallback((valor: boolean) => {
+    localStorage.setItem(STORAGE_KEY, valor ? "1" : "0");
+    setHabilitadoState(valor);
+  }, []);
 
   const ultimaEnviada = React.useRef<{
     lat: number;
@@ -31,7 +47,7 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
   } | null>(null);
 
   React.useEffect(() => {
-    if (!repartidor) {
+    if (!repartidor || !habilitado) {
       setEstado("pendiente");
       return;
     }
@@ -46,7 +62,7 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         setEstado("activo");
-        const { latitude, longitude, accuracy } = pos.coords;
+        const { latitude, longitude } = pos.coords;
         setUltimaUbicacion({ latitude, longitude });
 
         const anterior = ultimaEnviada.current;
@@ -64,13 +80,7 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
         ) {
           ultimaEnviada.current = { lat: latitude, lon: longitude, ts: ahora };
           api
-            .ubicacion({
-              repartidor_id: repartidor.id,
-              lat: latitude,
-              lng: longitude,
-              accuracy,
-              timestamp: new Date().toISOString(),
-            })
+            .ubicacion({ lat: latitude, lng: longitude })
             .catch(() => setEstado("error"));
         }
       },
@@ -85,10 +95,10 @@ export function GeoProvider({ children }: { children: React.ReactNode }) {
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [repartidor]);
+  }, [repartidor, habilitado]);
 
   return (
-    <GeoContext.Provider value={{ estado, ultimaUbicacion }}>
+    <GeoContext.Provider value={{ estado, ultimaUbicacion, habilitado, setHabilitado }}>
       {children}
     </GeoContext.Provider>
   );

@@ -3,17 +3,17 @@ import { cn } from "@/lib/utils";
 import type { EstadoPedido } from "@/lib/types";
 
 const estilos: Record<EstadoPedido, string> = {
-  PENDIENTE: "bg-amber-100 text-amber-700 border-amber-200",
-  ASIGNADO: "bg-blue-100 text-blue-700 border-blue-200",
-  EN_CAMINO: "bg-violet-100 text-violet-700 border-violet-200",
-  ENTREGADO: "bg-green-100 text-green-700 border-green-200",
+  pendiente: "bg-amber-100 text-amber-700 border-amber-200",
+  asignado: "bg-blue-100 text-blue-700 border-blue-200",
+  en_camino: "bg-violet-100 text-violet-700 border-violet-200",
+  entregado: "bg-green-100 text-green-700 border-green-200",
 };
 
 const etiquetas: Record<EstadoPedido, string> = {
-  PENDIENTE: "Pendiente",
-  ASIGNADO: "Asignado",
-  EN_CAMINO: "En camino",
-  ENTREGADO: "Entregado",
+  pendiente: "Pendiente",
+  asignado: "Asignado",
+  en_camino: "En camino",
+  entregado: "Entregado",
 };
 
 export function BadgeEstado({ estado }: { estado: EstadoPedido }) {

@@ -12,10 +12,10 @@ type Filtro = "TODOS" | EstadoPedido;
 
 const filtros: { key: Filtro; label: string }[] = [
   { key: "TODOS", label: "Todos" },
-  { key: "PENDIENTE", label: "Pendientes" },
-  { key: "ASIGNADO", label: "Asignados" },
-  { key: "EN_CAMINO", label: "En camino" },
-  { key: "ENTREGADO", label: "Entregados" },
+  { key: "pendiente", label: "Pendientes" },
+  { key: "asignado", label: "Asignados" },
+  { key: "en_camino", label: "En camino" },
+  { key: "entregado", label: "Entregados" },
 ];
 
 export default function SolicitudesPage() {
@@ -82,13 +82,13 @@ export default function SolicitudesPage() {
               </div>
               <p className="text-sm font-medium">{p.empresa}</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Recoge: {p.direccionRecojo}
+                Recoge: {p.direccion_recojo}
               </p>
               <p className="text-xs text-muted-foreground">
-                Entrega: {p.direccionEntrega}
+                Entrega: {p.direccion_entrega}
               </p>
               <p className="mt-2 text-xs text-muted-foreground">
-                {formatearFecha(p.createdAt)}
+                {formatearFecha(p.creado_en)}
               </p>
             </Link>
           ))}

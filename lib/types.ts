@@ -1,52 +1,26 @@
-export type EstadoPedido = "PENDIENTE" | "ASIGNADO" | "EN_CAMINO" | "ENTREGADO";
+export type EstadoPedido = "pendiente" | "asignado" | "en_camino" | "entregado";
 
-export type EstadoRepartidor = "DISPONIBLE" | "OCUPADO" | "INACTIVO";
-
-export interface Repartidor {
-  id: number;
-  nombre: string;
-  telefono: string;
-  usuario: string;
-  password: string;
-  estado: EstadoRepartidor;
-  latitude: number | null;
-  longitude: number | null;
-  ultimaUbicacion: string | null;
-}
+export type EstadoRepartidor = "disponible" | "ocupado" | "inactivo";
 
 export interface RepartidorPublico {
   id: number;
   nombre: string;
   telefono: string;
-  usuario: string;
   estado: EstadoRepartidor;
-  latitude: number | null;
-  longitude: number | null;
-  ultimaUbicacion: string | null;
 }
 
 export interface Pedido {
   id: number;
   codigo: string;
   empresa: string;
-  direccionRecojo: string;
-  direccionEntrega: string;
+  direccion_recojo: string;
+  direccion_entrega: string;
   observaciones: string | null;
   estado: EstadoPedido;
-  repartidorId: number | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface UbicacionInput {
-  repartidorId: number;
-  latitude: number;
-  longitude: number;
-  accuracy: number;
-  timestamp: string;
-}
-
-export function toRepartidorPublico(r: Repartidor): RepartidorPublico {
-  const { password: _password, ...resto } = r;
-  return resto;
+  repartidor_id: number | null;
+  repartidor_nombre: string | null;
+  lat: number;
+  lng: number;
+  creado_en: string;
+  actualizado_en: string;
 }

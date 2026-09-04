@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import { useGeo } from "@/components/geo-provider";
+import { api } from "@/lib/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { User, MapPin, LogOut } from "lucide-react";
@@ -13,7 +14,8 @@ export default function PerfilPage() {
   const { repartidor, cerrarSesion } = useAuth();
   const { estado } = useGeo();
 
-  function salir() {
+  async function salir() {
+    await api.logout().catch(() => {});
     cerrarSesion();
     router.replace("/");
   }
@@ -33,7 +35,7 @@ export default function PerfilPage() {
             <div>
               <CardTitle>{repartidor?.nombre}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                @{repartidor?.usuario}
+                {repartidor?.telefono}
               </p>
             </div>
           </div>

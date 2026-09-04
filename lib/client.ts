@@ -1,10 +1,6 @@
 import type { EstadoPedido, Pedido, RepartidorPublico } from "@/lib/types";
 
-export interface ApiResponse<T> {
-  ok: boolean;
-  data?: T;
-  error?: string;
-}
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
 export class ApiError extends Error {
   status: number;
@@ -14,10 +10,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(
-  url: string,
-  options: RequestInit = {}
-): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem("token");
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -25,32 +18,32 @@ async function request<T>(
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(url, { ...options, headers });
-  const body = (await res.json().catch(() => ({}))) as ApiResponse<T>;
+  const res = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
+  const body = await res.json().catch(() => ({}));
 
-  if (!res.ok || body.ok === false) {
+  if (!res.ok) {
     throw new ApiError(body.error ?? "Error de red", res.status);
   }
 
-  return body.data as T;
+  return body as T;
 }
 
 export const api = {
-  login: (usuario: string, password: string) =>
-    request<RepartidorPublico & { token: string }>("/api/auth/login", {
+  login: (telefono: string, password: string) =>
+    request<{ token: string; repartidor: RepartidorPublico }>("/api/auth/login", {
       method: "POST",
-      body: JSON.stringify({ usuario, password }),
+      body: JSON.stringify({ telefono, password }),
     }),
+
+  logout: () => request<{ ok: boolean }>("/api/auth/logout", { method: "POST" }),
 
   pedidos: () => request<Pedido[]>("/api/pedidos"),
 
   pedido: (id: number) => request<Pedido>(`/api/pedidos/${id}`),
 
-  aceptar: (id: number) =>
-    request<Pedido>(`/api/pedidos/${id}/aceptar`, { method: "POST" }),
+  aceptar: (id: number) => request<Pedido>(`/api/pedidos/${id}/aceptar`, { method: "POST" }),
 
-  rechazar: (id: number) =>
-    request<Pedido>(`/api/pedidos/${id}/rechazar`, { method: "POST" }),
+  rechazar: (id: number) => request<Pedido>(`/api/pedidos/${id}/rechazar`, { method: "POST" }),
 
   estado: (id: number, estado: EstadoPedido) =>
     request<Pedido>(`/api/pedidos/${id}/estado`, {
@@ -58,14 +51,8 @@ export const api = {
       body: JSON.stringify({ estado }),
     }),
 
-  ubicacion: (payload: {
-    repartidor_id: number;
-    lat: number;
-    lng: number;
-    accuracy: number;
-    timestamp: string;
-  }) =>
-    request<{ recibido: boolean }>("/api/ubicaciones", {
+  ubicacion: (payload: { lat: number; lng: number }) =>
+    request<RepartidorPublico & { lat: number; lng: number }>("/api/ubicaciones", {
       method: "POST",
       body: JSON.stringify(payload),
     }),

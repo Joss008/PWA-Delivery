@@ -94,13 +94,13 @@ export default function DetallePedidoPage() {
             <p className="text-xs uppercase text-muted-foreground">
               Dirección de recojo
             </p>
-            <p className="font-medium">{pedido.direccionRecojo}</p>
+            <p className="font-medium">{pedido.direccion_recojo}</p>
           </div>
           <div>
             <p className="text-xs uppercase text-muted-foreground">
               Dirección de entrega
             </p>
-            <p className="font-medium">{pedido.direccionEntrega}</p>
+            <p className="font-medium">{pedido.direccion_entrega}</p>
           </div>
           {pedido.observaciones && (
             <div>
@@ -112,7 +112,7 @@ export default function DetallePedidoPage() {
           )}
           <div>
             <p className="text-xs uppercase text-muted-foreground">Fecha</p>
-            <p>{formatearFecha(pedido.createdAt)}</p>
+            <p>{formatearFecha(pedido.creado_en)}</p>
           </div>
         </CardContent>
       </Card>
@@ -124,7 +124,7 @@ export default function DetallePedidoPage() {
       )}
 
       <div className="flex flex-col gap-2">
-        {pedido.estado === "PENDIENTE" && (
+        {pedido.estado === "pendiente" && (
           <>
             <Button
               size="lg"
@@ -158,12 +158,12 @@ export default function DetallePedidoPage() {
           </>
         )}
 
-        {pedido.estado === "ASIGNADO" && (
+        {pedido.estado === "asignado" && (
           <Button
             size="lg"
             disabled={enAccion}
             onClick={() =>
-              ejecutar(() => api.estado(pedido.id, "EN_CAMINO"), "iniciar")
+              ejecutar(() => api.estado(pedido.id, "en_camino"), "iniciar")
             }
           >
             {accion === "iniciar" ? (
@@ -175,12 +175,12 @@ export default function DetallePedidoPage() {
           </Button>
         )}
 
-        {pedido.estado === "EN_CAMINO" && (
+        {pedido.estado === "en_camino" && (
           <Button
             size="lg"
             disabled={enAccion}
             onClick={() =>
-              ejecutar(() => api.estado(pedido.id, "ENTREGADO"), "entregar")
+              ejecutar(() => api.estado(pedido.id, "entregado"), "entregar")
             }
           >
             {accion === "entregar" ? (
@@ -192,7 +192,7 @@ export default function DetallePedidoPage() {
           </Button>
         )}
 
-        {pedido.estado === "ENTREGADO" && (
+        {pedido.estado === "entregado" && (
           <p className="rounded-md bg-muted px-3 py-2 text-center text-sm text-muted-foreground">
             Pedido entregado · solo consulta
           </p>

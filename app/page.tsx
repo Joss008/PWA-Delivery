@@ -11,7 +11,7 @@ import { Truck, Loader2 } from "lucide-react";
 export default function LoginPage() {
   const router = useRouter();
   const { repartidor, iniciarSesion, listo } = useAuth();
-  const [usuario, setUsuario] = React.useState("");
+  const [telefono, setTelefono] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
   const [cargando, setCargando] = React.useState(false);
@@ -25,9 +25,8 @@ export default function LoginPage() {
     setError(null);
     setCargando(true);
     try {
-      const res = await api.login(usuario, password);
-      const { token, ...repartidorPublico } = res;
-      iniciarSesion(repartidorPublico, token);
+      const { token, repartidor: sesion } = await api.login(telefono, password);
+      iniciarSesion(sesion, token);
       router.replace("/inicio");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Error inesperado");
@@ -54,13 +53,13 @@ export default function LoginPage() {
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-muted-foreground">
-                Usuario
+                Teléfono
               </label>
               <input
                 className="h-10 rounded-md border border-input bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-                value={usuario}
-                onChange={(e) => setUsuario(e.target.value)}
-                autoComplete="username"
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+                autoComplete="tel"
                 required
               />
             </div>
@@ -94,8 +93,8 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            Demo: usuario <span className="font-medium">carlos</span> · clave{" "}
-            <span className="font-medium">123456</span>
+            Demo: teléfono <span className="font-medium">999111222</span> · clave{" "}
+            <span className="font-medium">999111222</span>
           </p>
         </CardContent>
       </Card>
