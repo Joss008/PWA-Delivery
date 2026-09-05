@@ -9,13 +9,20 @@ import type { Pedido } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BadgeEstado } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { MapPin, MapPinOff, ArrowRight, ClipboardList } from "lucide-react";
+import { MapPin, MapPinOff, ArrowRight, ClipboardList, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function InicioPage() {
   const { repartidor } = useAuth();
-  const { estado: estadoGps, habilitado, setHabilitado } = useGeo();
+  const {
+    detalle: detalleGeo,
+    ultimoEnvio,
+    habilitado,
+    setHabilitado,
+    enviarUbicacionPrueba,
+  } = useGeo();
   const [activo, setActivo] = React.useState<Pedido | null>(null);
+  const [enviandoPrueba, setEnviandoPrueba] = React.useState(false);
 
   React.useEffect(() => {
     api
@@ -30,6 +37,15 @@ export default function InicioPage() {
       })
       .catch(() => setActivo(null));
   }, [repartidor]);
+
+  async function probarUbicacion() {
+    setEnviandoPrueba(true);
+    try {
+      await enviarUbicacionPrueba(-13.0833, -76.3833);
+    } finally {
+      setEnviandoPrueba(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -46,14 +62,14 @@ export default function InicioPage() {
           <div
             className={cn(
               "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
-              habilitado && estadoGps === "activo"
+              habilitado && ultimoEnvio
                 ? "bg-green-100 text-green-600"
                 : habilitado
                 ? "bg-amber-100 text-amber-600"
                 : "bg-muted text-muted-foreground"
             )}
           >
-            {habilitado && estadoGps === "activo" ? (
+            {habilitado && ultimoEnvio ? (
               <MapPin className="h-5 w-5" />
             ) : (
               <MapPinOff className="h-5 w-5" />
@@ -62,18 +78,36 @@ export default function InicioPage() {
           <div className="flex-1">
             <p className="font-medium">GPS</p>
             <p className="text-sm text-muted-foreground">
-              {!habilitado
-                ? "Ubicación en pausa"
-                : estadoGps === "activo"
-                ? "Enviando ubicación en tiempo real"
-                : estadoGps === "sin_permiso"
-                ? "Permiso de ubicación denegado"
-                : estadoGps === "error"
-                ? "Error al obtener ubicación"
-                : "Solicitando ubicación…"}
+              {detalleGeo ?? "Ubicación en pausa"}
             </p>
           </div>
           <Switch checked={habilitado} onCheckedChange={setHabilitado} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="flex flex-col gap-3 p-4">
+          <div>
+            <p className="text-sm font-medium">Prueba de envío</p>
+            <p className="text-xs text-muted-foreground">
+              Envía una coordenada fija al admin para verificar que la
+              comunicación funciona (útil si tu navegador no detecta GPS).
+            </p>
+          </div>
+          <button
+            onClick={probarUbicacion}
+            disabled={enviandoPrueba}
+            className="inline-flex items-center justify-center gap-2 self-start rounded-md border bg-card px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
+          >
+            <Send className="h-4 w-4" />
+            {enviandoPrueba ? "Enviando…" : "Enviar ubicación de prueba"}
+          </button>
+          {ultimoEnvio && (
+            <p className="text-xs text-muted-foreground">
+              Último envío: {ultimoEnvio.lat.toFixed(5)}, {ultimoEnvio.lng.toFixed(5)}{" "}
+              ({new Date(ultimoEnvio.ts).toLocaleTimeString()})
+            </p>
+          )}
         </CardContent>
       </Card>
 

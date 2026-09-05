@@ -1,5 +1,4 @@
 export type EstadoPedido = "pendiente" | "asignado" | "en_camino" | "entregado";
-
 export type EstadoRepartidor = "disponible" | "ocupado" | "inactivo";
 
 export interface RepartidorPublico {
@@ -13,6 +12,7 @@ export interface Pedido {
   id: number;
   codigo: string;
   empresa: string;
+  empresa_id: number | null;
   direccion_recojo: string;
   direccion_entrega: string;
   observaciones: string | null;

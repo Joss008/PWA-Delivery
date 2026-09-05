@@ -1,5 +1,5 @@
-const CACHE_NAME = "delivery-repartidor-v1";
-const ASSETS = ["/", "/manifest.json"];
+const CACHE_NAME = "delivery-repartidor-v2";
+const ASSETS = ["/manifest.json"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -30,6 +30,15 @@ self.addEventListener("fetch", (event) => {
 
   if (url.pathname.startsWith("/api/")) {
     event.respondWith(fetch(request));
+    return;
+  }
+
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request).catch(() =>
+        caches.match(request).then((cached) => cached ?? Response.error())
+      )
+    );
     return;
   }
 

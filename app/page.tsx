@@ -96,6 +96,10 @@ export default function LoginPage() {
             Demo: teléfono <span className="font-medium">999111222</span> · clave{" "}
             <span className="font-medium">999111222</span>
           </p>
+          <p className="mt-1 text-center text-[10px] text-muted-foreground/70">
+            Usa las credenciales del repartidor creado en la plataforma de
+            administración.
+          </p>
         </CardContent>
       </Card>
     </main>

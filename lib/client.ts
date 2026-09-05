@@ -1,6 +1,11 @@
 import type { EstadoPedido, Pedido, RepartidorPublico } from "@/lib/types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
+const DEFAULT_API_BASE_URL = "http://localhost:3001";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || DEFAULT_API_BASE_URL;
+
+export const EVENTO_SESION_EXPIRADA = "auth:sesion-expirada";
 
 export class ApiError extends Error {
   status: number;
@@ -8,6 +13,12 @@ export class ApiError extends Error {
     super(message);
     this.status = status;
   }
+}
+
+function limpiarSesion(): void {
+  localStorage.removeItem("token");
+  localStorage.removeItem("repartidor");
+  window.dispatchEvent(new Event(EVENTO_SESION_EXPIRADA));
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -22,6 +33,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const body = await res.json().catch(() => ({}));
 
   if (!res.ok) {
+    if (res.status === 401 && token) limpiarSesion();
     throw new ApiError(body.error ?? "Error de red", res.status);
   }
 
@@ -37,13 +49,25 @@ export const api = {
 
   logout: () => request<{ ok: boolean }>("/api/auth/logout", { method: "POST" }),
 
+  me: () =>
+    request<{ repartidor: RepartidorPublico }>("/api/auth/me", {
+      method: "GET",
+    }),
+
   pedidos: () => request<Pedido[]>("/api/pedidos"),
 
-  pedido: (id: number) => request<Pedido>(`/api/pedidos/${id}`),
+  pedido: async (id: number): Promise<Pedido> => {
+    const pedidos = await request<Pedido[]>("/api/pedidos");
+    const encontrado = pedidos.find((p) => p.id === id);
+    if (!encontrado) throw new ApiError("Pedido no encontrado", 404);
+    return encontrado;
+  },
 
-  aceptar: (id: number) => request<Pedido>(`/api/pedidos/${id}/aceptar`, { method: "POST" }),
+  aceptar: (id: number) =>
+    request<Pedido>(`/api/pedidos/${id}/aceptar`, { method: "POST" }),
 
-  rechazar: (id: number) => request<Pedido>(`/api/pedidos/${id}/rechazar`, { method: "POST" }),
+  rechazar: (id: number) =>
+    request<Pedido>(`/api/pedidos/${id}/rechazar`, { method: "POST" }),
 
   estado: (id: number, estado: EstadoPedido) =>
     request<Pedido>(`/api/pedidos/${id}/estado`, {

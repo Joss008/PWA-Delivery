@@ -2,16 +2,19 @@
 
 import * as React from "react";
 import type { RepartidorPublico } from "@/lib/types";
+import { api, EVENTO_SESION_EXPIRADA } from "@/lib/client";
 
 interface AuthContextValue {
   repartidor: RepartidorPublico | null;
   token: string | null;
-  iniciarSesion: (r: RepartidorPublico, token: string) => void;
+  iniciarSesion: (r: RepartidorPublico, t: string) => void;
   cerrarSesion: () => void;
   listo: boolean;
 }
 
 const AuthContext = React.createContext<AuthContextValue | null>(null);
+
+const TOKEN_KEY = "token";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [repartidor, setRepartidor] = React.useState<RepartidorPublico | null>(
@@ -21,23 +24,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [listo, setListo] = React.useState(false);
 
   React.useEffect(() => {
-    const t = localStorage.getItem("token");
-    const r = localStorage.getItem("repartidor");
-    if (t && r) {
-      try {
-        setToken(t);
-        setRepartidor(JSON.parse(r) as RepartidorPublico);
-      } catch {
-        localStorage.removeItem("token");
-        localStorage.removeItem("repartidor");
-      }
+    const t = localStorage.getItem(TOKEN_KEY);
+    if (!t) {
+      setListo(true);
+      return;
     }
-    setListo(true);
+    setToken(t);
+    api
+      .me()
+      .then((res) => setRepartidor(res.repartidor))
+      .catch(() => {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem("repartidor");
+        setToken(null);
+      })
+      .finally(() => setListo(true));
   }, []);
 
   const iniciarSesion = React.useCallback(
     (r: RepartidorPublico, t: string) => {
-      localStorage.setItem("token", t);
+      localStorage.setItem(TOKEN_KEY, t);
       localStorage.setItem("repartidor", JSON.stringify(r));
       setToken(t);
       setRepartidor(r);
@@ -46,10 +52,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const cerrarSesion = React.useCallback(() => {
-    localStorage.removeItem("token");
+    localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem("repartidor");
     setToken(null);
     setRepartidor(null);
+  }, []);
+
+  React.useEffect(() => {
+    const onExpirada = () => {
+      setToken(null);
+      setRepartidor(null);
+    };
+    window.addEventListener(EVENTO_SESION_EXPIRADA, onExpirada);
+    return () => window.removeEventListener(EVENTO_SESION_EXPIRADA, onExpirada);
   }, []);
 
   return (

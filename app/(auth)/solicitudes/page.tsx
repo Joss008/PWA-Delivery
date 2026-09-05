@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { api } from "@/lib/client";
+import { useAuth } from "@/components/auth-provider";
 import type { EstadoPedido, Pedido } from "@/lib/types";
 import { BadgeEstado } from "@/components/ui/badge";
 import { formatearFecha, cn } from "@/lib/utils";
@@ -18,7 +19,13 @@ const filtros: { key: Filtro; label: string }[] = [
   { key: "entregado", label: "Entregados" },
 ];
 
+function visiblePara(repartidorId: number, pedido: Pedido): boolean {
+  if (pedido.estado === "pendiente") return true;
+  return pedido.repartidor_id === repartidorId;
+}
+
 export default function SolicitudesPage() {
+  const { repartidor } = useAuth();
   const [pedidos, setPedidos] = React.useState<Pedido[]>([]);
   const [filtro, setFiltro] = React.useState<Filtro>("TODOS");
   const [cargando, setCargando] = React.useState(true);
@@ -31,10 +38,12 @@ export default function SolicitudesPage() {
       .finally(() => setCargando(false));
   }, []);
 
+  const propios = repartidor
+    ? pedidos.filter((p) => visiblePara(repartidor.id, p))
+    : [];
+
   const visibles =
-    filtro === "TODOS"
-      ? pedidos
-      : pedidos.filter((p) => p.estado === filtro);
+    filtro === "TODOS" ? propios : propios.filter((p) => p.estado === filtro);
 
   return (
     <div className="flex flex-col gap-4">
