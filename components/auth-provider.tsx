@@ -52,6 +52,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const cerrarSesion = React.useCallback(() => {
+    // NO limpiamos la última ubicación al cerrar sesión. El panel web debe
+    // seguir mostrando al repartidor en su última coordenada conocida
+    // aunque la PWA se haya cerrado. El backend ya marca "GPS en pausa" en
+    // /api/auth/logout; aquí solo limpiamos el estado local para que la UI
+    // no quede atascada si la llamada falla.
+    api.clearLocation().catch(() => {});
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem("repartidor");
     setToken(null);

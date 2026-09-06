@@ -6,6 +6,13 @@ export interface RepartidorPublico {
   nombre: string;
   telefono: string;
   estado: EstadoRepartidor;
+  /**
+   * Última coordenada conocida del backend (lat/lng) y timestamp de cuándo
+   * se recibió. Puede ser null si el repartidor nunca ha enviado su GPS.
+   */
+  lat?: number;
+  lng?: number;
+  ubicacion_recibida_en?: string | null;
 }
 
 export interface Pedido {

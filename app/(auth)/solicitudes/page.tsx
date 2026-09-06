@@ -9,10 +9,9 @@ import { BadgeEstado } from "@/components/ui/badge";
 import { formatearFecha, cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
-type Filtro = "TODOS" | EstadoPedido;
+type Filtro = EstadoPedido;
 
 const filtros: { key: Filtro; label: string }[] = [
-  { key: "TODOS", label: "Todos" },
   { key: "pendiente", label: "Pendientes" },
   { key: "asignado", label: "Asignados" },
   { key: "en_camino", label: "En camino" },
@@ -27,7 +26,7 @@ function visiblePara(repartidorId: number, pedido: Pedido): boolean {
 export default function SolicitudesPage() {
   const { repartidor } = useAuth();
   const [pedidos, setPedidos] = React.useState<Pedido[]>([]);
-  const [filtro, setFiltro] = React.useState<Filtro>("TODOS");
+  const [filtro, setFiltro] = React.useState<Filtro>("pendiente");
   const [cargando, setCargando] = React.useState(true);
 
   React.useEffect(() => {
@@ -42,8 +41,7 @@ export default function SolicitudesPage() {
     ? pedidos.filter((p) => visiblePara(repartidor.id, p))
     : [];
 
-  const visibles =
-    filtro === "TODOS" ? propios : propios.filter((p) => p.estado === filtro);
+  const visibles = propios.filter((p) => p.estado === filtro);
 
   return (
     <div className="flex flex-col gap-4">

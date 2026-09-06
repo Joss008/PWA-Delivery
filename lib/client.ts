@@ -80,4 +80,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+
+  // Se llama cuando el usuario desactiva el GPS desde la PWA. El backend
+  // borra la última ubicación recibida para que el panel deje de mostrar al
+  // repartidor en el mapa.
+  clearLocation: () =>
+    request<{ ok: boolean }>("/api/ubicaciones", { method: "DELETE" }),
 };
