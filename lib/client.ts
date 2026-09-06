@@ -2,8 +2,9 @@ import type { EstadoPedido, Pedido, RepartidorPublico } from "@/lib/types";
 
 const DEFAULT_API_BASE_URL = "http://localhost:3001";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || DEFAULT_API_BASE_URL;
+const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || DEFAULT_API_BASE_URL
+).replace(/\/+$/, "");
 
 export const EVENTO_SESION_EXPIRADA = "auth:sesion-expirada";
 
