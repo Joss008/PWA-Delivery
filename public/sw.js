@@ -43,15 +43,18 @@ self.addEventListener("fetch", (event) => {
   }
 
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request).then((response) => {
-        if (response.ok && url.pathname.startsWith("/_next/static/")) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-        }
-        return response;
-      });
-      return cached || network;
-    })
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const cached = await cache.match(request);
+      const networkPromise = fetch(request)
+        .then((response) => {
+          if (response.ok && url.pathname.startsWith("/_next/static/")) {
+            cache.put(request, response.clone());
+          }
+          return response;
+        })
+        .catch(() => null);
+      return cached || (await networkPromise) || Response.error();
+    })()
   );
 });
