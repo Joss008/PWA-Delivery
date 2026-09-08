@@ -8,7 +8,15 @@ import { BadgeEstado } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatearFecha } from "@/lib/utils";
-import { ArrowLeft, Check, X, Truck, PackageCheck, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  X,
+  Truck,
+  PackageCheck,
+  Loader2,
+  ShieldCheck,
+} from "lucide-react";
 
 export default function DetallePedidoPage() {
   const params = useParams<{ id: string }>();
@@ -17,6 +25,14 @@ export default function DetallePedidoPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [cargando, setCargando] = React.useState(true);
   const [accion, setAccion] = React.useState<string | null>(null);
+
+  // --- Estado para confirmar entrega con OTP ---
+  const [otp, setOtp] = React.useState("");
+  const [capturandoGps, setCapturandoGps] = React.useState(false);
+  const [ultimoIntentoFallido, setUltimoIntentoFallido] = React.useState<
+    number | null
+  >(null);
+  const [bloqueadoPorIntentos, setBloqueadoPorIntentos] = React.useState(false);
 
   const id = Number(params.id);
 
@@ -37,6 +53,71 @@ export default function DetallePedidoPage() {
       router.refresh();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Error inesperado");
+    } finally {
+      setAccion(null);
+    }
+  }
+
+  /**
+   * Captura la posición actual del navegador UNA vez para adjuntarla a la
+   * entrega como evidencia antifraude. Si falla, devolvemos null: el backend
+   * seguirá aceptando la entrega, pero la marcará como alerta.
+   */
+  function capturarUbicacion(): Promise<{ lat: number; lng: number } | null> {
+    return new Promise((resolve) => {
+      if (!("geolocation" in navigator)) {
+        resolve(null);
+        return;
+      }
+      setCapturandoGps(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setCapturandoGps(false);
+          resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        },
+        () => {
+          setCapturandoGps(false);
+          resolve(null);
+        },
+        { enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 }
+      );
+    });
+  }
+
+  async function confirmarEntregaConOtp() {
+    if (!pedido) return;
+    const otpLimpio = otp.replace(/\s+/g, "");
+    if (otpLimpio.length < 4) {
+      setError("Pídele al cliente el código de verificación antes de confirmar.");
+      return;
+    }
+    setAccion("entregar");
+    setError(null);
+    try {
+      const coords = await capturarUbicacion();
+      const actualizado = await api.entregarConOTP(pedido.id, {
+        otp: otpLimpio,
+        lat: coords?.lat ?? null,
+        lng: coords?.lng ?? null,
+      });
+      setPedido(actualizado);
+      setOtp("");
+      setUltimoIntentoFallido(null);
+      setBloqueadoPorIntentos(false);
+      router.refresh();
+    } catch (e) {
+      if (e instanceof ApiError) {
+        setError(e.message);
+        const data = (e as ApiError & { intentos?: number; bloqueado?: boolean });
+        if (typeof data.intentos === "number") {
+          setUltimoIntentoFallido(data.intentos);
+        }
+        if (data.bloqueado) {
+          setBloqueadoPorIntentos(true);
+        }
+      } else {
+        setError("Error inesperado");
+      }
     } finally {
       setAccion(null);
     }
@@ -176,20 +257,64 @@ export default function DetallePedidoPage() {
         )}
 
         {pedido.estado === "en_camino" && (
-          <Button
-            size="lg"
-            disabled={enAccion}
-            onClick={() =>
-              ejecutar(() => api.estado(pedido.id, "entregado"), "entregar")
-            }
-          >
-            {accion === "entregar" ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <PackageCheck className="h-5 w-5" />
-            )}
-            Marcar como entregado
-          </Button>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Confirmar entrega con código
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 text-sm">
+              <p className="text-xs text-muted-foreground">
+                Pídele al cliente el código de 6 dígitos que recibió de la
+                empresa. Al confirmarlo se registra la entrega con tu
+                ubicación actual como evidencia.
+              </p>
+              <input
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                placeholder="000000"
+                value={otp}
+                onChange={(e) => {
+                  setOtp(e.target.value.replace(/\D/g, ""));
+                  setError(null);
+                }}
+                disabled={enAccion || bloqueadoPorIntentos}
+                className="w-full rounded-md border border-input bg-background px-3 py-3 text-center font-mono text-2xl tracking-[0.4em] placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
+                autoComplete="one-time-code"
+              />
+              {ultimoIntentoFallido !== null && !bloqueadoPorIntentos && (
+                <p className="text-xs text-amber-700">
+                  {ultimoIntentoFallido === 1
+                    ? "Código incorrecto. Vuelve a intentarlo (máx. 3)."
+                    : `Código incorrecto. Te queda${ultimoIntentoFallido === 2 ? " 1" : ""} intento antes de bloquearse.`}
+                </p>
+              )}
+              {bloqueadoPorIntentos && (
+                <p className="text-xs text-red-700">
+                  Has agotado los intentos. Solicita un nuevo código a la
+                  empresa para continuar.
+                </p>
+              )}
+              <Button
+                size="lg"
+                disabled={enAccion || bloqueadoPorIntentos || otp.length < 4}
+                onClick={confirmarEntregaConOtp}
+              >
+                {accion === "entregar" || capturandoGps ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <PackageCheck className="h-5 w-5" />
+                )}
+                {capturandoGps
+                  ? "Capturando ubicación…"
+                  : accion === "entregar"
+                    ? "Confirmando…"
+                    : "Confirmar entrega"}
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
         {pedido.estado === "entregado" && (

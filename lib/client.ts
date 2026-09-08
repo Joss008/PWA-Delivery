@@ -76,6 +76,24 @@ export const api = {
       body: JSON.stringify({ estado }),
     }),
 
+  /**
+   * Marca el pedido como entregado validando el OTP que el cliente dictó al
+   * repartidor. Envía además la ubicación actual para evidencia antifraude.
+   */
+  entregarConOTP: (
+    id: number,
+    args: { otp: string; lat?: number | null; lng?: number | null }
+  ) =>
+    request<Pedido>(`/api/pedidos/${id}/estado`, {
+      method: "POST",
+      body: JSON.stringify({
+        estado: "entregado",
+        otp: args.otp,
+        lat: args.lat ?? null,
+        lng: args.lng ?? null,
+      }),
+    }),
+
   ubicacion: (payload: { lat: number; lng: number }) =>
     request<RepartidorPublico & { lat: number; lng: number }>("/api/ubicaciones", {
       method: "POST",
