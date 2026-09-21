@@ -30,4 +30,9 @@ export interface Pedido {
   lng: number;
   creado_en: string;
   actualizado_en: string;
+  /**
+   * Pago que recibirá el repartidor al entregar este pedido, en soles (PEN).
+   * Lo define la empresa al crear el pedido; lo mostramos antes de aceptar.
+   */
+  pago_repartidor: number;
 }

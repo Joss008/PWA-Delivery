@@ -7,7 +7,16 @@ import { useAuth } from "@/components/auth-provider";
 import type { EstadoPedido, Pedido } from "@/lib/types";
 import { BadgeEstado } from "@/components/ui/badge";
 import { formatearFecha, cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
+import { Banknote, Loader2 } from "lucide-react";
+
+const formatoPago = new Intl.NumberFormat("es-PE", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+function formatearPago(monto: number): string {
+  return `S/ ${formatoPago.format(monto ?? 0)}`;
+}
 
 type Filtro = EstadoPedido;
 
@@ -94,6 +103,15 @@ export default function SolicitudesPage() {
               <p className="text-xs text-muted-foreground">
                 Entrega: {p.direccion_entrega}
               </p>
+              <div className="mt-2 flex items-center gap-2 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-emerald-800 ring-1 ring-inset ring-emerald-200">
+                <Banknote className="h-3.5 w-3.5 shrink-0" />
+                <span className="text-[11px] font-medium uppercase tracking-wide opacity-80">
+                  Pago
+                </span>
+                <span className="ml-auto text-sm font-bold tabular-nums">
+                  {formatearPago(p.pago_repartidor)}
+                </span>
+              </div>
               <p className="mt-2 text-xs text-muted-foreground">
                 {formatearFecha(p.creado_en)}
               </p>

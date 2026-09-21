@@ -22,6 +22,7 @@ import {
   Sparkles,
   ArrowRight,
   History,
+  Banknote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,15 @@ const formatoFechaCorta = new Intl.DateTimeFormat("es-PE", {
 
 function formatear(ts: number | string): string {
   return formatoFechaCorta.format(new Date(ts));
+}
+
+const formatoPago = new Intl.NumberFormat("es-PE", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+function formatearPago(monto: number): string {
+  return `S/ ${formatoPago.format(monto ?? 0)}`;
 }
 
 export default function InicioPage() {
@@ -216,6 +226,15 @@ export default function InicioPage() {
                     <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
                     {p.empresa}
                   </div>
+                  <div className="mb-3 flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-emerald-800 ring-1 ring-inset ring-emerald-200">
+                    <Banknote className="h-4 w-4 shrink-0" />
+                    <span className="text-xs font-medium uppercase tracking-wide opacity-80">
+                      Tu pago
+                    </span>
+                    <span className="ml-auto text-base font-bold tabular-nums">
+                      {formatearPago(p.pago_repartidor)}
+                    </span>
+                  </div>
                   <div className="mb-3 space-y-1.5 text-xs">
                     <div className="flex gap-2">
                       <span className="font-semibold uppercase tracking-wide text-muted-foreground w-14 shrink-0">
@@ -254,7 +273,7 @@ export default function InicioPage() {
                     onClick={() => setConfirmando(p)}
                   >
                     <Check className="h-5 w-5" />
-                    Aceptar pedido
+                    Aceptar pedido · {formatearPago(p.pago_repartidor)}
                     <ArrowRight className="h-4 w-4 opacity-80" />
                   </Button>
                 </CardContent>
@@ -314,6 +333,15 @@ export default function InicioPage() {
                   <ArrowRight className="mx-1 inline h-3 w-3" />
                   {confirmando.direccion_entrega}
                 </p>
+                <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-emerald-800 ring-1 ring-inset ring-emerald-200">
+                  <Banknote className="h-4 w-4 shrink-0" />
+                  <span className="text-xs font-medium uppercase tracking-wide opacity-80">
+                    Recibirás
+                  </span>
+                  <span className="ml-auto text-lg font-bold tabular-nums">
+                    {formatearPago(confirmando.pago_repartidor)}
+                  </span>
+                </div>
               </div>
             </div>
 

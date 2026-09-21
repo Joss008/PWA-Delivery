@@ -16,7 +16,17 @@ import {
   PackageCheck,
   Loader2,
   ShieldCheck,
+  Banknote,
 } from "lucide-react";
+
+const formatoPago = new Intl.NumberFormat("es-PE", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+function formatearPago(monto: number): string {
+  return `S/ ${formatoPago.format(monto ?? 0)}`;
+}
 
 export default function DetallePedidoPage() {
   const params = useParams<{ id: string }>();
@@ -167,6 +177,17 @@ export default function DetallePedidoPage() {
           </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 text-sm">
+          <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2.5 text-emerald-800 ring-1 ring-inset ring-emerald-200">
+            <Banknote className="h-5 w-5 shrink-0" />
+            <div className="flex-1">
+              <p className="text-[11px] font-semibold uppercase tracking-wide opacity-80">
+                Tu pago al entregar
+              </p>
+              <p className="text-xl font-bold leading-tight tabular-nums">
+                {formatearPago(pedido.pago_repartidor)}
+              </p>
+            </div>
+          </div>
           <div>
             <p className="text-xs uppercase text-muted-foreground">Empresa</p>
             <p className="font-medium">{pedido.empresa}</p>
